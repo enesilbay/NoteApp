@@ -1,4 +1,4 @@
-# NoteApp Roadmap
+# NoteA+ Roadmap
 
 Google Keep'in yerine geçecek, web + telefon + tablette çalışan, tek hesapla senkronize not uygulaması.
 

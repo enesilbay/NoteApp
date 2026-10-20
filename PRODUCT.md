@@ -35,7 +35,7 @@ Keep-level speed with things Keep lacks in one place: per-note password locking 
 
 ## Brand Commitments
 
-- Name: **NoteApp**.
+- Name: **NoteA+**.
 - Must have its own colour palette and style, clearly distinct from Google Keep; the user explicitly asked for a lively, animation-rich feel.
 
 ## Evidence on Hand

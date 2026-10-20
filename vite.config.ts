@@ -13,8 +13,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon-180x180.png'],
       manifest: {
-        name: 'NoteApp',
-        short_name: 'NoteApp',
+        name: 'NoteA+',
+        short_name: 'NoteA+',
         description: 'Tüm cihazlarınızda senkronize notlar',
         lang: 'tr',
         theme_color: '#17112e',

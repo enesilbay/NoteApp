@@ -109,7 +109,7 @@ export function AppShell() {
       >
         <div className={cn('mb-9 flex items-center gap-3 px-6', collapsed && 'md:justify-center md:px-0')}>
           <LogoMark className="size-9 shrink-0" />
-          <span className={cn('text-[1.45rem] [font-weight:800] tracking-[-0.02em] [font-stretch:88%]', collapsed && 'md:hidden')}>NoteApp</span>
+          <span className={cn('text-[1.45rem] [font-weight:800] tracking-[-0.02em] [font-stretch:88%]', collapsed && 'md:hidden')}>NoteA+</span>
         </div>
 
         <nav className="flex flex-col gap-1.5 px-3">

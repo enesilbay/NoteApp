@@ -1,4 +1,4 @@
-# NoteApp
+# NoteA+
 
 Google Keep'in yerine geçecek, web, telefon ve tablette çalışan, tek hesapla senkronize not uygulaması.
 Yol haritası için [ROADMAP.md](ROADMAP.md) dosyasına bakın.

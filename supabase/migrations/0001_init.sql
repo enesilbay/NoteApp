@@ -1,4 +1,4 @@
--- NoteApp başlangıç şeması (ROADMAP > Veri Modeli Taslağı)
+-- NoteA+ başlangıç şeması (ROADMAP > Veri Modeli Taslağı)
 -- Kullanıcılar Supabase Auth'un auth.users tablosunda tutulur.
 
 create table public.folders (
