@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">NoteA+</string>
+    <string name="title_activity_main">NoteA+</string>
+    <string name="package_name">com.enesilbay.noteaplus</string>
+    <string name="custom_url_scheme">com.enesilbay.noteaplus</string>
+</resources>

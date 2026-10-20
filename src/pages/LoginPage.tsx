@@ -1,19 +1,25 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate } from 'react-router'
+import { Link, Navigate } from 'react-router'
 import { Loader2 } from 'lucide-react'
 import { LogoMark, NotebookArt } from '@/components/NotebookArt'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/lib/auth-context'
 import { COVERS, coverStyle } from '@/lib/covers'
+import { isNative } from '@/lib/supabase'
 
-type Mode = 'sign-in' | 'sign-up'
+type Mode = 'sign-in' | 'sign-up' | 'forgot'
 
 const ERRORS: Record<string, string> = {
   'Invalid login credentials': 'E-posta veya şifre hatalı.',
   'Email not confirmed': 'Giriş yapmadan önce e-postanı onayla.',
   'User already registered': 'Bu e-posta ile zaten bir hesap var.',
+  'email rate limit exceeded': 'Çok fazla e-posta istendi, birkaç dakika sonra tekrar dene.',
+  'Unsupported provider: provider is not enabled': 'Google ile giriş henüz açılmadı.',
 }
+
+const TITLES: Record<Mode, string> = { 'sign-in': 'Giriş yap', 'sign-up': 'Hesap oluştur', forgot: 'Şifreni sıfırla' }
+const SUBMIT: Record<Mode, string> = { 'sign-in': 'Giriş yap', 'sign-up': 'Kayıt ol', forgot: 'Sıfırlama bağlantısı gönder' }
 
 const ELECTRIC = COVERS.find((c) => c.id === 'elektrik') ?? COVERS[0]
 
@@ -23,7 +29,7 @@ function toMessage(err: unknown) {
 }
 
 export function LoginPage() {
-  const { state, signIn, signUp, signInWithGoogle } = useAuth()
+  const { state, signIn, signUp, signInWithGoogle, sendPasswordReset } = useAuth()
   const [mode, setMode] = useState<Mode>('sign-in')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -40,7 +46,11 @@ export function LoginPage() {
     setInfo(null)
     try {
       if (mode === 'sign-in') await signIn(email, password)
-      else if (await signUp(email, password)) {
+      else if (mode === 'forgot') {
+        await sendPasswordReset(email)
+        setInfo('Şifre sıfırlama bağlantısı e-postana gönderildi. Gelen kutunu (ve spam klasörünü) kontrol et.')
+        setMode('sign-in')
+      } else if (await signUp(email, password)) {
         setInfo('Hesabın oluşturuldu. Giriş yapmak için e-postana gelen bağlantıya tıkla.')
         setMode('sign-in')
       }
@@ -78,7 +88,7 @@ export function LoginPage() {
         <div className="relative rounded-[18px] bg-white px-6 pt-6 pb-7 text-ink">
           <div className="mb-6 flex items-center gap-2.5">
             <LogoMark className="size-9" />
-            <h2 className="text-[1.6rem] [font-weight:800] tracking-[-0.02em] [font-stretch:88%]">{mode === 'sign-in' ? 'Giriş yap' : 'Hesap oluştur'}</h2>
+            <h2 className="text-[1.6rem] [font-weight:800] tracking-[-0.02em] [font-stretch:88%]">{TITLES[mode]}</h2>
           </div>
 
           <form onSubmit={submit} className="flex flex-col gap-4">
@@ -94,20 +104,35 @@ export function LoginPage() {
                 className="h-12 rounded-xl bg-white text-base"
               />
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="password" className="font-bold">Şifre</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
-                minLength={6}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="h-12 rounded-xl bg-white text-base"
-              />
-              {mode === 'sign-up' && <p className="text-xs font-medium text-ink/65">En az 6 karakter.</p>}
-            </div>
+            {mode !== 'forgot' && (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="password" className="font-bold">Şifre</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
+                  minLength={6}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="h-12 rounded-xl bg-white text-base"
+                />
+                {mode === 'sign-up' && <p className="text-xs font-medium text-ink/65">En az 6 karakter.</p>}
+                {mode === 'sign-in' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('forgot')
+                      setError(null)
+                      setInfo(null)
+                    }}
+                    className="self-end text-sm font-bold text-ink/70 underline decoration-ink/25 decoration-2 underline-offset-4 hover:text-ink"
+                  >
+                    Şifremi unuttum
+                  </button>
+                )}
+              </div>
+            )}
 
             {error && (
               <p role="alert" className="animate-pop rounded-xl bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">
@@ -122,37 +147,48 @@ export function LoginPage() {
               className="mt-1 flex h-12 items-center justify-center gap-2 rounded-full bg-ink text-base font-bold text-white shadow-[0_10px_20px_-10px_rgb(23_17_46/0.8)] transition-[background-color,scale] hover:bg-night active:scale-[0.98] disabled:opacity-60"
             >
               {busy && <Loader2 className="size-4 animate-spin" />}
-              {mode === 'sign-in' ? 'Giriş yap' : 'Kayıt ol'}
+              {SUBMIT[mode]}
             </button>
           </form>
 
-          <div className="my-5 flex items-center gap-3 text-xs font-bold text-ink/55">
-            <span className="h-px flex-1 bg-border" /> veya <span className="h-px flex-1 bg-border" />
-          </div>
+          {mode !== 'forgot' && (
+            <>
+              <div className="my-5 flex items-center gap-3 text-xs font-bold text-ink/55">
+                <span className="h-px flex-1 bg-border" /> veya <span className="h-px flex-1 bg-border" />
+              </div>
 
-          <button
-            type="button"
-            onClick={google}
-            className="flex h-12 w-full items-center justify-center gap-2.5 rounded-full border-2 border-ink/12 bg-white font-bold transition-[background-color,scale] hover:bg-accent active:scale-[0.98]"
-          >
-            <GoogleIcon /> Google ile devam et
-          </button>
+              <button
+                type="button"
+                onClick={google}
+                className="flex h-12 w-full items-center justify-center gap-2.5 rounded-full border-2 border-ink/12 bg-white font-bold transition-[background-color,scale] hover:bg-accent active:scale-[0.98]"
+              >
+                <GoogleIcon /> Google ile devam et
+              </button>
+            </>
+          )}
         </div>
 
         <p className="relative px-3 pt-3 pb-1 text-center text-sm font-medium">
-          {mode === 'sign-in' ? 'Hesabın yok mu?' : 'Zaten hesabın var mı?'}{' '}
+          {mode === 'sign-in' ? 'Hesabın yok mu?' : mode === 'sign-up' ? 'Zaten hesabın var mı?' : 'Şifreni hatırladın mı?'}{' '}
           <button
             type="button"
             className="font-extrabold underline decoration-white/50 decoration-2 underline-offset-4 hover:decoration-white"
             onClick={() => {
               setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in')
               setError(null)
+              setInfo(null)
             }}
           >
             {mode === 'sign-in' ? 'Kayıt ol' : 'Giriş yap'}
           </button>
         </p>
       </div>
+
+      {!isNative && (
+        <Link to="/indir" className="mt-6 text-sm font-bold text-ink/70 underline decoration-ink/25 decoration-2 underline-offset-4 hover:text-ink">
+          Telefonuna indir (Android / iPhone)
+        </Link>
+      )}
     </div>
   )
 }

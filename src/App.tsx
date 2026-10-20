@@ -5,7 +5,9 @@ import { AppShell } from '@/components/AppShell'
 import { NotesProvider } from '@/components/NotesProvider'
 import { useAuth } from '@/lib/auth-context'
 import { LoginPage } from '@/pages/LoginPage'
+import { DownloadPage } from '@/pages/DownloadPage'
 import { NotesPage } from '@/pages/NotesPage'
+import { ResetPasswordPage } from '@/pages/ResetPasswordPage'
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { state } = useAuth()
@@ -24,6 +26,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/indir" element={<DownloadPage />} />
       <Route
         element={
           <RequireAuth>
