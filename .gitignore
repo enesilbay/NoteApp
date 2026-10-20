@@ -36,3 +36,8 @@ dev-dist
 
 # Impeccable review screenshots
 .impeccable/review/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example

@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Cloudflare Workers statik site: yalnızca dist/ klasörü sunulur, sunucu kodu yok
+  "name": "notea-plus",
+  "compatibility_date": "2026-10-19",
+  "assets": {
+    "directory": "./dist",
+    // Bilinmeyen adresler (/archive, /indir…) index.html'e düşer, yönlendirmeyi React Router yapar
+    "not_found_handling": "single-page-application"
+  }
+}

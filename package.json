@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
-    "deploy": "npm run build && wrangler pages deploy dist --project-name notea-plus --branch main"
+    "deploy": "npm run build && node -e \"require('fs').cpSync('downloads','dist/downloads',{recursive:true})\" && wrangler deploy",
+    "apk": "node scripts/build-apk.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.3",
