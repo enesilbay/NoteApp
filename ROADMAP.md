@@ -22,7 +22,7 @@ Tek kod tabanıyla üç platform hedeflendiği için **PWA-öncelikli** yaklaş�
 |---|---|---|
 | Frontend | React + TypeScript + Vite (PWA) | Web, telefon ve tabletin tamamı tek kod tabanı; ana ekrana eklenebilir |
 | Mobil paketleme (sonra) | Capacitor | Aynı koddan Android/iOS uygulaması, mağazaya çıkış |
-| Stil | Tailwind CSS | Responsive (telefon/tablet/masaüstü) hızlı geliştirme |
+| Stil | Tailwind CSS + shadcn/ui | Responsive (telefon/tablet/masaüstü) hızlı geliştirme |
 | Backend + Auth + DB | Supabase (Postgres, Auth, Storage, Realtime) | Hesap, senkron, görsel depolama ve gerçek zamanlı güncelleme hazır gelir |
 | Çizim | Canvas + Pointer Events (`perfect-freehand`) | Mouse, parmak ve kalem tek API ile desteklenir |
 | Offline | IndexedDB (Dexie) + senkron kuyruğu | İnternetsiz kullanım, sonra senkron |
@@ -34,22 +34,22 @@ Tek kod tabanıyla üç platform hedeflendiği için **PWA-öncelikli** yaklaş�
 
 ## Faz 0 — Hazırlık (1 hafta)
 
-- [ ] Teknoloji kararının netleşmesi
-- [ ] Repo yapısı, lint/format, TypeScript, CI (GitHub Actions)
+- [x] Teknoloji kararının netleşmesi
+- [x] Repo yapısı, lint/format, TypeScript, CI (GitHub Actions)
 - [ ] Tasarım: renk paleti, tipografi, telefon/tablet/masaüstü wireframe'leri
-- [ ] Veri modeli taslağı (aşağıda)
-- [ ] README ve katkı rehberi
+- [x] Veri modeli taslağı (aşağıda)
+- [x] README ve katkı rehberi
 
 ## Faz 1 — MVP: Hesap + Temel Notlar (2–3 hafta)
 
-- [ ] Kayıt / giriş / çıkış (e-posta + şifre, Google ile giriş)
-- [ ] Not oluştur / düzenle / sil (çöp kutusu, geri alma)
-- [ ] Başlık + metin içeriği, otomatik kaydetme
-- [ ] Not listesi (grid/liste görünümü), responsive yerleşim
-- [ ] Notları sabitleme (pin)
-- [ ] Arşivleme + arşiv ekranı
-- [ ] Bulut senkronizasyonu (tüm cihazlarda aynı notlar)
-- [ ] PWA kurulumu (ana ekrana ekle)
+- [ ] Kayıt / giriş / çıkış (e-posta + şifre, Google ile giriş) — kod hazır, Supabase projesiyle doğrulanacak
+- [x] Not oluştur / düzenle / sil (çöp kutusu, geri alma)
+- [x] Başlık + metin içeriği, otomatik kaydetme
+- [x] Not listesi (grid/liste görünümü), responsive yerleşim
+- [x] Notları sabitleme (pin)
+- [x] Arşivleme + arşiv ekranı
+- [ ] Bulut senkronizasyonu (tüm cihazlarda aynı notlar) — kod hazır (Supabase Realtime), doğrulanacak
+- [x] PWA kurulumu (ana ekrana ekle)
 
 **Çıkış kriteri:** Telefonda yazdığım not web'de ve tablette görünüyor.
 
@@ -58,7 +58,7 @@ Tek kod tabanıyla üç platform hedeflendiği için **PWA-öncelikli** yaklaş�
 - [ ] Onay kutucuklu (checklist) notlar; işaretlenenleri alta indir
 - [ ] Kategoriler / etiketler (oluştur, yeniden adlandır, renk ata)
 - [ ] Proje klasörleri (notları klasöre taşı, iç içe klasör opsiyonel)
-- [ ] Not renkleri
+- [x] Not renkleri (8 kapak rengi, renk seçici)
 - [ ] Arama (başlık + içerik) ve filtreleme (kategori, klasör, sabitli, arşiv, checklist)
 - [ ] Sürükle-bırak ile sıralama
 
