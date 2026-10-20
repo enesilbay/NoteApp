@@ -42,13 +42,13 @@ Tek kod tabanıyla üç platform hedeflendiği için **PWA-öncelikli** yaklaş�
 
 ## Faz 1 — MVP: Hesap + Temel Notlar (2–3 hafta)
 
-- [ ] Kayıt / giriş / çıkış (e-posta + şifre, Google ile giriş) — kod hazır, Supabase projesiyle doğrulanacak
+- [x] Kayıt / giriş / çıkış (e-posta + şifre, Google ile giriş, şifre sıfırlama)
 - [x] Not oluştur / düzenle / sil (çöp kutusu, geri alma)
 - [x] Başlık + metin içeriği, otomatik kaydetme
 - [x] Not listesi (grid/liste görünümü), responsive yerleşim
 - [x] Notları sabitleme (pin)
 - [x] Arşivleme + arşiv ekranı
-- [ ] Bulut senkronizasyonu (tüm cihazlarda aynı notlar) — kod hazır (Supabase Realtime), doğrulanacak
+- [x] Bulut senkronizasyonu (tüm cihazlarda aynı notlar) — telefon ↔ web doğrulandı
 - [x] PWA kurulumu (ana ekrana ekle)
 
 **Çıkış kriteri:** Telefonda yazdığım not web'de ve tablette görünüyor.
@@ -94,15 +94,17 @@ Tek kod tabanıyla üç platform hedeflendiği için **PWA-öncelikli** yaklaş�
 - [ ] Koyu tema
 - [ ] Klavye kısayolları (web)
 - [ ] Erişilebilirlik, çoklu dil (TR/EN)
-- [ ] Veri dışa aktarma (JSON/Markdown) ve Google Keep'ten içe aktarma (Google Takeout)
+- [ ] Veri dışa aktarma (JSON/Markdown)
+- [x] Google Keep'ten içe aktarma (Google Takeout .zip/.json)
 
 ## Faz 7 — Yayın (1–2 hafta)
 
-- [ ] Capacitor ile Android/iOS paketleme
-- [ ] Web'in canlıya alınması (Vercel/Netlify/Cloudflare)
+- [x] Capacitor ile Android paketleme (imzalı APK, sitedeki /indir sayfasından)
+- [ ] iOS paketleme (şimdilik Safari → Ana Ekrana Ekle)
+- [x] Web'in canlıya alınması (Cloudflare: notea-plus.enesilbayy.workers.dev)
 - [ ] Hata izleme (Sentry), temel analitik
 - [ ] Yedekleme stratejisi, gizlilik politikası
-- [ ] Kapalı beta testi → mağaza yayını
+- [ ] Kapalı beta testi (arkadaşlar) → mağaza yayını
 
 ## Faz 8 — Gelecek Fikirleri (backlog)
 

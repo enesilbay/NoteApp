@@ -44,6 +44,22 @@ Sunucuyu yeniden başlatın (`npm run dev`); giriş ekranı gelir.
 
 Telefonda/tablette denemek için: `npm run dev -- --host`, ardından aynı Wi-Fi'deki cihazdan bilgisayarın IP adresine gidin.
 
+## Yayınlama
+
+Site: **https://notea-plus.enesilbayy.workers.dev** (arkadaşlara gönderilecek sayfa: `/indir`)
+
+```bash
+npm run apk      # sürümü artırır, imzalı APK'yı derler → downloads/notea-plus.apk
+npm run deploy   # siteyi (ve downloads/ içindeki APK'yı) Cloudflare'e yükler
+```
+
+- `npm run apk` için Android SDK, JDK 21 (`JAVA_HOME`) ve imza dosyaları gerekir: `android/keystore.properties`
+  ve içinde adı geçen `.jks` dosyası. **İkisi de git'te yok; yedeklerini saklayın.** Kaybolursa yeni APK eski
+  kurulumun üzerine güncellenemez.
+- `.env` içindeki `VITE_SITE_URL`, uygulamadaki e-posta bağlantılarının açılacağı site adresidir.
+- Supabase → Authentication → URL Configuration'da Site URL ve şu yönlendirme adresleri tanımlı olmalı:
+  site adresi `/**`, `http://localhost:5173/**`, `com.enesilbay.noteaplus://auth/callback`.
+
 ## Proje yapısı
 
 ```
