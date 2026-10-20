@@ -39,6 +39,8 @@ Sunucuyu yeniden başlatın (`npm run dev`); giriş ekranı gelir.
 | `npm run build` | Tip kontrolü + üretim derlemesi (`dist/`) |
 | `npm run preview` | Derlenmiş uygulamayı yerelde sunar (PWA/service worker testi için) |
 | `npm run lint` | oxlint |
+| `npm test` | Birim testleri (vitest) |
+| `npm run deploy` | Derler ve Cloudflare Pages'e yükler (önce `npx wrangler login`) |
 
 Telefonda/tablette denemek için: `npm run dev -- --host`, ardından aynı Wi-Fi'deki cihazdan bilgisayarın IP adresine gidin.
 

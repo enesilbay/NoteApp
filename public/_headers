@@ -1,0 +1,8 @@
+# Cloudflare Pages başlıkları
+/downloads/*.apk
+  Content-Type: application/vnd.android.package-archive
+  Content-Disposition: attachment; filename="notea-plus.apk"
+
+# Service worker her zaman güncel sürümüyle gelsin
+/sw.js
+  Cache-Control: no-cache
