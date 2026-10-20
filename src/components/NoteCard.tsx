@@ -16,13 +16,15 @@ interface Props {
   index: number
   /** Düzenleyicide açıkken defter masadan kalkar: adını düzenleyiciye devreder (aynı ad iki yerde olamaz). */
   editing: boolean
+  /** Izgara görünümü: telefonda iki sütuna sığan küçük kart; eylemler (çöp hariç) düzenleyicide. */
+  compact: boolean
   onOpen(note: Note): void
 }
 
 const shortDate = new Intl.DateTimeFormat('tr', { day: 'numeric', month: 'short' })
 const TILT_VARS = ['--rx', '--ry', '--mx', '--my']
 
-export function NoteCard({ note, view, index, editing, onOpen }: Props) {
+export function NoteCard({ note, view, index, editing, compact, onOpen }: Props) {
   const actions = useNoteActions()
   const bookRef = useRef<HTMLDivElement>(null)
   const cover = coverOf(note)
@@ -55,7 +57,11 @@ export function NoteCard({ note, view, index, editing, onOpen }: Props) {
           viewTransitionClass: 'note-card',
         } as CSSProperties
       }
-      className={cn('group animate-drop relative mb-6 break-inside-avoid pt-3 [perspective:900px]', editing && 'invisible')}
+      className={cn(
+        'group animate-drop relative mb-6 break-inside-avoid pt-3 [perspective:900px]',
+        compact && 'max-sm:mb-3.5',
+        editing && 'invisible',
+      )}
       onPointerMove={tilt}
       onPointerLeave={untilt}
     >
@@ -80,12 +86,31 @@ export function NoteCard({ note, view, index, editing, onOpen }: Props) {
         <div aria-hidden className="cover-sheen pointer-events-none absolute inset-0 rounded-[inherit] opacity-40 transition-opacity duration-300 group-hover:opacity-100" />
 
         {note.is_pinned && !inTrash && (
-          <div aria-hidden className="animate-band absolute inset-y-0 right-7 w-2.5 bg-(--band) shadow-[inset_-2px_0_0_rgb(0_0_0/0.18),2px_0_6px_-2px_rgb(0_0_0/0.35)]" />
+          <div
+            aria-hidden
+            className={cn(
+              'animate-band absolute inset-y-0 right-7 w-2.5 bg-(--band) shadow-[inset_-2px_0_0_rgb(0_0_0/0.18),2px_0_6px_-2px_rgb(0_0_0/0.35)]',
+              compact && 'max-sm:right-3.5 max-sm:w-2',
+            )}
+          />
         )}
 
-        <div className={cn('relative px-5 pt-7 pb-2', note.is_pinned && !inTrash && 'pr-12')}>
+        <div
+          className={cn(
+            'relative px-5 pt-7 pb-2',
+            note.is_pinned && !inTrash && 'pr-12',
+            compact && 'max-sm:px-3.5 max-sm:pt-6',
+            compact && !inTrash && 'max-sm:pb-4',
+            compact && note.is_pinned && !inTrash && 'max-sm:pr-8',
+          )}
+        >
           {note.title && (
-            <h3 className="text-[1.4rem] leading-[1.08] [font-weight:760] tracking-[-0.015em] text-balance break-words [font-stretch:88%]">
+            <h3
+              className={cn(
+                'text-[1.4rem] leading-[1.08] [font-weight:760] tracking-[-0.015em] text-balance break-words [font-stretch:88%]',
+                compact && 'max-sm:text-[1.08rem]',
+              )}
+            >
               {note.title}
             </h3>
           )}
@@ -93,16 +118,21 @@ export function NoteCard({ note, view, index, editing, onOpen }: Props) {
             <p
               className={cn(
                 'line-clamp-[9] text-[0.95rem] leading-relaxed [font-weight:450] break-words whitespace-pre-wrap opacity-90',
+                compact && 'max-sm:line-clamp-[10] max-sm:text-[0.86rem] max-sm:leading-snug',
                 note.title && 'mt-2',
+                note.title && compact && 'max-sm:mt-1.5',
               )}
             >
               {note.content}
             </p>
           )}
-          {empty && <p className="text-lg font-semibold opacity-70">Boş not</p>}
+          {empty && <p className={cn('text-lg font-semibold opacity-70', compact && 'max-sm:text-base')}>Boş not</p>}
         </div>
 
-        <footer className="relative flex min-h-11 items-center gap-0.5 pr-2 pb-1.5 pl-5" onClick={(e) => e.stopPropagation()}>
+        <footer
+          className={cn('relative flex min-h-11 items-center gap-0.5 pr-2 pb-1.5 pl-5', compact && !inTrash && 'max-sm:hidden', compact && inTrash && 'max-sm:pl-3.5')}
+          onClick={(e) => e.stopPropagation()}
+        >
           <time dateTime={note.updated_at} className="mr-auto text-[0.75rem] font-bold tracking-[0.08em] uppercase tabular-nums opacity-80">
             {shortDate.format(new Date(note.updated_at))}
           </time>

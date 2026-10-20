@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useOutletContext } from 'react-router'
 import { Loader2, Pin } from 'lucide-react'
 import type { ShellContext } from '@/components/AppShell'
@@ -25,6 +25,45 @@ function inView(note: Note, view: View) {
   return view === 'archive' ? note.is_archived : !note.is_archived
 }
 
+/** Kartın yaklaşık yüksekliği (satır cinsinden): sütunları dengelemek için ölçmeden tahmin edilir. */
+function estimateHeight(note: Note) {
+  const lines = note.content
+    ? note.content.split('\n').reduce((sum, line) => sum + Math.max(1, Math.ceil(line.length / 22)), 0)
+    : 0
+  return 3 + (note.title ? 2 : 0) + Math.min(lines, 10)
+}
+
+/** Keep gibi akan ızgara: notlar soldan sağa sırayla, her biri o an en kısa sütuna yerleşir. */
+function toColumns(items: Note[], count: number) {
+  const columns: Note[][] = Array.from({ length: count }, () => [])
+  const heights = new Array<number>(count).fill(0)
+  for (const note of items) {
+    const i = heights.indexOf(Math.min(...heights))
+    columns[i].push(note)
+    heights[i] += estimateHeight(note)
+  }
+  return columns
+}
+
+/** Telefonda 2 sütun; daha geniş ekranlarda 16rem'lik sütunlardan sığdığı kadar. */
+function useColumnCount() {
+  const ref = useRef<HTMLDivElement>(null)
+  const [count, setCount] = useState(2)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const update = () => {
+      const width = el.clientWidth
+      setCount(width < 600 ? 2 : Math.max(2, Math.floor((width + 20) / (256 + 20))))
+    }
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+  return [ref, count] as const
+}
+
 function matches(note: Note, query: string) {
   const q = query.trim().toLocaleLowerCase('tr')
   return !q || note.title.toLocaleLowerCase('tr').includes(q) || note.content.toLocaleLowerCase('tr').includes(q)
@@ -34,6 +73,7 @@ export function NotesPage({ view }: { view: View }) {
   const { notes, loading, deleteForever } = useNotes()
   const { query, layout } = useOutletContext<ShellContext>()
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [boardRef, columnCount] = useColumnCount()
 
   const visible = useMemo(
     () =>
@@ -49,20 +89,31 @@ export function NotesPage({ view }: { view: View }) {
   const open = (n: Note) => withViewTransition(() => setEditingId(n.id))
   const close = () => withViewTransition(() => setEditingId(null))
 
-  const grid = (items: Note[], offset = 0) => (
-    <div className={cn(layout === 'grid' ? 'gap-5 sm:columns-[16rem]' : 'mx-auto max-w-2xl')}>
-      {items.map((note, i) => (
-        <NoteCard
-          key={note.id}
-          note={note}
-          view={view}
-          index={offset + i}
-          editing={note.id === editingId}
-          onOpen={open}
-        />
-      ))}
-    </div>
+  const card = (note: Note, index: number) => (
+    <NoteCard
+      key={note.id}
+      note={note}
+      view={view}
+      index={index}
+      editing={note.id === editingId}
+      compact={layout === 'grid'}
+      onOpen={open}
+    />
   )
+
+  const grid = (items: Note[], offset = 0) => {
+    if (layout === 'list') return <div className="mx-auto max-w-2xl">{items.map((n, i) => card(n, offset + i))}</div>
+    const order = new Map(items.map((n, i) => [n.id, offset + i]))
+    return (
+      <div className="flex items-start gap-3 sm:gap-5">
+        {toColumns(items, columnCount).map((column, i) => (
+          <div key={i} className="min-w-0 flex-1">
+            {column.map((n) => card(n, order.get(n.id) ?? 0))}
+          </div>
+        ))}
+      </div>
+    )
+  }
 
   const sectionTitle = (text: string, icon?: boolean) => (
     <h2 className={cn('mb-2 flex items-center gap-1.5 px-1 text-[0.95rem] font-bold text-ink/80', layout === 'list' && 'mx-auto max-w-2xl')}>
@@ -74,7 +125,7 @@ export function NotesPage({ view }: { view: View }) {
   const count = visible.length
 
   return (
-    <>
+    <div ref={boardRef}>
       <div className={cn('mb-6 flex flex-wrap items-baseline gap-x-3 gap-y-2', layout === 'list' && 'mx-auto max-w-2xl')}>
         <h1 className="text-[2.3rem] leading-none [font-weight:800] tracking-[-0.03em] [font-stretch:85%] sm:text-[2.9rem]">{TITLES[view]}</h1>
         {!loading && count > 0 && (
@@ -122,7 +173,7 @@ export function NotesPage({ view }: { view: View }) {
       )}
 
       <NoteEditor note={editing} onClose={close} />
-    </>
+    </div>
   )
 }
 

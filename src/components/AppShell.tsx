@@ -197,7 +197,7 @@ export function AppShell() {
 
           <IconAction
             label={layout === 'grid' ? 'Liste görünümü' : 'Izgara görünümü'}
-            className="size-11 text-ink max-sm:hidden"
+            className="size-11 shrink-0 text-ink"
             onClick={() => setLayout((l) => (l === 'grid' ? 'list' : 'grid'))}
           >
             {layout === 'grid' ? <Rows3 /> : <LayoutGrid />}
