@@ -1,4 +1,4 @@
-import { useRef, type CSSProperties, type PointerEvent } from 'react'
+import { memo, useEffect, useRef, type CSSProperties, type PointerEvent } from 'react'
 import { Archive, ArchiveRestore, Pin, RotateCcw, Trash, Trash2 } from 'lucide-react'
 import { CoverPicker } from '@/components/CoverPicker'
 import { IconAction } from '@/components/IconAction'
@@ -6,7 +6,7 @@ import { coverOf, coverStyle } from '@/lib/covers'
 import { useNoteActions } from '@/lib/note-actions'
 import type { Note } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import { withViewTransition } from '@/lib/view-transition'
+import { trackOffscreen, withViewTransition } from '@/lib/view-transition'
 
 export type View = 'notes' | 'archive' | 'trash'
 
@@ -24,30 +24,47 @@ interface Props {
 const shortDate = new Intl.DateTimeFormat('tr', { day: 'numeric', month: 'short' })
 const TILT_VARS = ['--rx', '--ry', '--mx', '--my']
 
-export function NoteCard({ note, view, index, editing, compact, onOpen }: Props) {
+/** Notlar değiştikçe yalnızca değişen kart yeniden çizilir (her kartta birkaç ipucu/açılır pencere var). */
+export const NoteCard = memo(function NoteCard({ note, view, index, editing, compact, onOpen }: Props) {
   const actions = useNoteActions()
+  const articleRef = useRef<HTMLElement>(null)
   const bookRef = useRef<HTMLDivElement>(null)
+  const frame = useRef(0)
   const cover = coverOf(note)
   const inTrash = view === 'trash'
   const empty = !note.title && !note.content
   const act = (fn: (n: Note) => void) => () => withViewTransition(() => fn(note))
 
-  // Defter fareyi izleyerek eğilir, parlaklık imleçle kayar (dokunmatikte kapalı)
+  useEffect(() => (articleRef.current ? trackOffscreen(articleRef.current) : undefined), [])
+  useEffect(() => () => cancelAnimationFrame(frame.current), [])
+
+  // Defter fareyi izleyerek eğilir, parlaklık imleçle kayar (dokunmatikte kapalı); kare başına bir kez
   const tilt = (e: PointerEvent<HTMLElement>) => {
-    const el = bookRef.current
-    if (!el || e.pointerType !== 'mouse' || inTrash) return
-    const r = el.getBoundingClientRect()
-    const px = (e.clientX - r.left) / r.width
-    const py = (e.clientY - r.top) / r.height
-    el.style.setProperty('--ry', `${(px - 0.5) * 12}deg`)
-    el.style.setProperty('--rx', `${(0.5 - py) * 9}deg`)
-    el.style.setProperty('--mx', `${px * 100}%`)
-    el.style.setProperty('--my', `${py * 100}%`)
+    if (e.pointerType !== 'mouse' || inTrash || frame.current) return
+    const { clientX, clientY } = e
+    frame.current = requestAnimationFrame(() => {
+      frame.current = 0
+      const el = bookRef.current
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      const px = (clientX - r.left) / r.width
+      const py = (clientY - r.top) / r.height
+      el.style.setProperty('--ry', `${(px - 0.5) * 12}deg`)
+      el.style.setProperty('--rx', `${(0.5 - py) * 9}deg`)
+      el.style.setProperty('--mx', `${px * 100}%`)
+      el.style.setProperty('--my', `${py * 100}%`)
+    })
   }
-  const untilt = () => TILT_VARS.forEach((v) => bookRef.current?.style.removeProperty(v))
+  const untilt = () => {
+    cancelAnimationFrame(frame.current)
+    frame.current = 0
+    TILT_VARS.forEach((v) => bookRef.current?.style.removeProperty(v))
+  }
 
   return (
     <article
+      ref={articleRef}
+      data-note-id={note.id}
       style={
         {
           ...coverStyle(cover),
@@ -166,4 +183,4 @@ export function NoteCard({ note, view, index, editing, compact, onOpen }: Props)
       </div>
     </article>
   )
-}
+})

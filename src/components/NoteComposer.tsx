@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent, useRef, useState, type CSSProperties } from 'react'
 import { useAutosize } from '@/hooks/use-autosize'
 import { COVERS, coverStyle, type CoverId } from '@/lib/covers'
-import { useNotes } from '@/lib/notes-context'
+import { useNoteStore } from '@/lib/notes-context'
 import { cn } from '@/lib/utils'
 import { withViewTransition } from '@/lib/view-transition'
 
@@ -10,7 +10,7 @@ import { withViewTransition } from '@/lib/view-transition'
  * Dışarı tıklayınca veya Kapat'a basınca kaydeder; renk seçilmezse not kendi rengini alır.
  */
 export function NoteComposer() {
-  const { createNote } = useNotes()
+  const { createNote } = useNoteStore()
   const [expanded, setExpanded] = useState(false)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')

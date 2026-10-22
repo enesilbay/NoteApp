@@ -14,7 +14,7 @@ import {
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth-context'
 import { parseKeepFiles } from '@/lib/keep-import'
-import { useNotes } from '@/lib/notes-context'
+import { useNoteStore } from '@/lib/notes-context'
 import { isDemoMode } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -43,7 +43,7 @@ function readLayout(): Layout {
 
 export function AppShell() {
   const { state, signOut } = useAuth()
-  const { importNotes } = useNotes()
+  const { importNotes } = useNoteStore()
   const importInput = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState('')
   const [layout, setLayout] = useState<Layout>(readLayout)

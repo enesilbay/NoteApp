@@ -1,6 +1,6 @@
 import { toast } from 'sonner'
 import type { CoverId } from './covers'
-import { useNotes } from './notes-context'
+import { useNoteStore } from './notes-context'
 import type { Note } from './types'
 import { withViewTransition } from './view-transition'
 
@@ -9,7 +9,7 @@ import { withViewTransition } from './view-transition'
  * Çağıran taraf, kartların kayması için bunları `withViewTransition` içinde çağırır.
  */
 export function useNoteActions() {
-  const { updateNote, deleteForever } = useNotes()
+  const { updateNote, deleteForever } = useNoteStore()
   const undo = (fn: () => void) => () => withViewTransition(fn)
 
   return {

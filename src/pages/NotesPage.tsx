@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useOutletContext } from 'react-router'
 import { Loader2, Pin } from 'lucide-react'
 import type { ShellContext } from '@/components/AppShell'
@@ -64,8 +64,7 @@ function useColumnCount() {
   return [ref, count] as const
 }
 
-function matches(note: Note, query: string) {
-  const q = query.trim().toLocaleLowerCase('tr')
+function matches(note: Note, q: string) {
   return !q || note.title.toLocaleLowerCase('tr').includes(q) || note.content.toLocaleLowerCase('tr').includes(q)
 }
 
@@ -75,19 +74,21 @@ export function NotesPage({ view }: { view: View }) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [boardRef, columnCount] = useColumnCount()
 
-  const visible = useMemo(
-    () =>
-      notes
-        .filter((n) => inView(n, view) && matches(n, query))
-        .sort((a, b) => b.created_at.localeCompare(a.created_at)),
-    [notes, view, query],
+  const visible = useMemo(() => {
+    const q = query.trim().toLocaleLowerCase('tr')
+    return notes.filter((n) => inView(n, view) && matches(n, q)).sort((a, b) => b.created_at.localeCompare(a.created_at))
+  }, [notes, view, query])
+  const [pinned, others] = useMemo(
+    () => (view === 'notes' ? [visible.filter((n) => n.is_pinned), visible.filter((n) => !n.is_pinned)] : [[], visible]),
+    [visible, view],
   )
-  const pinned = view === 'notes' ? visible.filter((n) => n.is_pinned) : []
-  const others = view === 'notes' ? visible.filter((n) => !n.is_pinned) : visible
+  const pinnedColumns = useMemo(() => toColumns(pinned, columnCount), [pinned, columnCount])
+  const otherColumns = useMemo(() => toColumns(others, columnCount), [others, columnCount])
   const editing = notes.find((n) => n.id === editingId) ?? null
 
-  const open = (n: Note) => withViewTransition(() => setEditingId(n.id))
-  const close = () => withViewTransition(() => setEditingId(null))
+  // Aç/kapat yalnızca o defteri canlandırır; onOpen sabit kalır ki kartlar yeniden çizilmesin
+  const open = useCallback((n: Note) => withViewTransition(() => setEditingId(n.id), { solo: n.id }), [])
+  const close = () => withViewTransition(() => setEditingId(null), { solo: editingId ?? undefined })
 
   const card = (note: Note, index: number) => (
     <NoteCard
@@ -101,12 +102,12 @@ export function NotesPage({ view }: { view: View }) {
     />
   )
 
-  const grid = (items: Note[], offset = 0) => {
+  const grid = (items: Note[], columns: Note[][], offset = 0) => {
     if (layout === 'list') return <div className="mx-auto max-w-2xl">{items.map((n, i) => card(n, offset + i))}</div>
     const order = new Map(items.map((n, i) => [n.id, offset + i]))
     return (
       <div className="flex items-start gap-3 sm:gap-5">
-        {toColumns(items, columnCount).map((column, i) => (
+        {columns.map((column, i) => (
           <div key={i} className="min-w-0 flex-1">
             {column.map((n) => card(n, order.get(n.id) ?? 0))}
           </div>
@@ -160,13 +161,13 @@ export function NotesPage({ view }: { view: View }) {
           {pinned.length > 0 && (
             <section className="mb-8">
               {sectionTitle('Sabitlenenler', true)}
-              {grid(pinned)}
+              {grid(pinned, pinnedColumns)}
             </section>
           )}
           {others.length > 0 && (
             <section>
               {pinned.length > 0 && sectionTitle('Diğerleri')}
-              {grid(others, pinned.length)}
+              {grid(others, otherColumns, pinned.length)}
             </section>
           )}
         </>

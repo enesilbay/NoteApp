@@ -153,7 +153,7 @@
 @keyframes leaf-turn {
   0% { transform: rotateY(0deg); }
   85% { opacity: 1; }
-  100% { transform: rotateY(-165deg); opacity: 0; }
+  100% { transform: rotateY(-165deg); opacity: 0; visibility: hidden; }
 }
 
 /* Lastik bant yukarıdan gerilerek takılır */
@@ -220,6 +220,12 @@
 }
 ::view-transition-new(.note-card):only-child {
   animation: none;
+}
+
+/* Aç/kapat yalnızca o defteri taşır; ekran dışındaki kartların görüntüsü hiç alınmaz */
+:root.vt-solo [data-note-id]:not([data-vt-keep]),
+[data-note-id][data-vt-off]:not([data-vt-keep]) {
+  view-transition-name: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

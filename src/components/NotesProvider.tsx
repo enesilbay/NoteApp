@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth-context'
-import { NotesContext, type NotesContextValue } from '@/lib/notes-context'
+import { NoteActionsContext, NotesContext, type NoteActionsValue, type NotesContextValue } from '@/lib/notes-context'
 import { createLocalRepo, createSupabaseRepo } from '@/lib/notes-repo'
 import { supabase } from '@/lib/supabase'
 import type { Note, NoteChange } from '@/lib/types'
@@ -85,10 +85,14 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     [reload],
   )
 
-  const value = useMemo<NotesContextValue>(
+  // İçe aktarma tekrar kontrolü için güncel liste; eylemler bu sayede notlara bağımlı olmadan sabit kalır.
+  const notesRef = useRef(notes)
+  useLayoutEffect(() => {
+    notesRef.current = notes
+  }, [notes])
+
+  const actions = useMemo<NoteActionsValue>(
     () => ({
-      notes,
-      loading,
       createNote(fields) {
         if (!repo || !userId) return
         const now = new Date().toISOString()
@@ -110,7 +114,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       },
       importNotes(items) {
         if (!repo || !userId) return 0
-        const seen = new Set(notes.map((n) => `${n.title}\u0000${n.content}`))
+        const seen = new Set(notesRef.current.map((n) => `${n.title}\u0000${n.content}`))
         const fresh = items.filter((i) => !seen.has(`${i.title}\u0000${i.content}`))
         if (fresh.length === 0) return 0
         const imported: Note[] = fresh.map((i) => ({
@@ -141,8 +145,14 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         track(ids, repo.remove(ids))
       },
     }),
-    [notes, loading, repo, userId, track],
+    [repo, userId, track],
   )
 
-  return <NotesContext value={value}>{children}</NotesContext>
+  const value = useMemo<NotesContextValue>(() => ({ notes, loading, ...actions }), [notes, loading, actions])
+
+  return (
+    <NoteActionsContext value={actions}>
+      <NotesContext value={value}>{children}</NotesContext>
+    </NoteActionsContext>
+  )
 }

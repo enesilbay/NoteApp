@@ -7,7 +7,7 @@ import { useAutosize } from '@/hooks/use-autosize'
 import { coverOf, coverStyle } from '@/lib/covers'
 import { formatEdited } from '@/lib/format'
 import { useNoteActions } from '@/lib/note-actions'
-import { useNotes } from '@/lib/notes-context'
+import { useNoteStore } from '@/lib/notes-context'
 import type { Note } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { withViewTransition } from '@/lib/view-transition'
@@ -29,7 +29,7 @@ export function NoteEditor({ note, onClose }: Props) {
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
           style={{ viewTransitionName: 'editor-scrim' } as CSSProperties}
-          className="fixed inset-0 z-50 bg-[rgb(23_17_46/0.55)] backdrop-blur-[3px]"
+          className="fixed inset-0 z-50 bg-[rgb(23_17_46/0.6)] sm:bg-[rgb(23_17_46/0.55)] sm:backdrop-blur-[3px]"
         />
         {note && <EditorBody key={note.id} note={note} onClose={onClose} />}
       </DialogPrimitive.Portal>
@@ -38,13 +38,14 @@ export function NoteEditor({ note, onClose }: Props) {
 }
 
 function EditorBody({ note, onClose }: { note: Note; onClose(): void }) {
-  const { updateNote } = useNotes()
+  const { updateNote } = useNoteStore()
   const actions = useNoteActions()
   const cover = coverOf(note)
   // Taslak düzenleyiciye aittir: realtime'dan gelen eski bir yankı yazılanı ezmez.
   const [title, setTitle] = useState(note.title)
   const [content, setContent] = useState(note.content)
   const contentRef = useRef<HTMLTextAreaElement>(null)
+  const sheetRef = useRef<HTMLDivElement>(null)
   useAutosize(contentRef, content)
 
   const saved = useRef({ title: note.title, content: note.content })
@@ -79,7 +80,14 @@ function EditorBody({ note, onClose }: { note: Note; onClose(): void }) {
 
   return (
     <DialogPrimitive.Content
+      ref={sheetRef}
       aria-describedby={undefined}
+      onOpenAutoFocus={(e) => {
+        e.preventDefault()
+        // Dokunmatikte not okumak için açılır: klavye açılış animasyonuyla aynı anda kalkıp ekranı sarsmasın
+        const target = window.matchMedia('(pointer: coarse)').matches ? sheetRef.current : contentRef.current
+        target?.focus({ preventScroll: true })
+      }}
       style={{ ...coverStyle(cover), viewTransitionName: `note-${note.id}` } as CSSProperties}
       className={cn(
         'cover fixed inset-0 z-[51] flex flex-col px-2 pt-[max(1.6rem,calc(env(safe-area-inset-top)+1.2rem))] pb-[max(0.25rem,env(safe-area-inset-bottom))] [perspective:1800px] transition-[background-color] duration-500 outline-none',
@@ -104,7 +112,6 @@ function EditorBody({ note, onClose }: { note: Note; onClose(): void }) {
             onChange={(e) => edit({ content: e.target.value })}
             placeholder="Yazmaya başla…"
             aria-label="Not içeriği"
-            autoFocus
             rows={4}
             className="block w-full resize-none bg-transparent px-5 pt-2 text-[1.05rem] leading-[1.7] outline-none placeholder:text-ink/45"
           />
