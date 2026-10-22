@@ -13,6 +13,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       // Kayıt main.tsx'te yapılır: Android uygulamasında service worker'a gerek yok
       injectRegister: false,
+      // injectRegister kapalıyken autoUpdate bunları kendisi eklemiyor: yeni sürüm sonsuza dek "bekliyor"da kalıyordu
+      workbox: { skipWaiting: true, clientsClaim: true },
       includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon-180x180.png'],
       manifest: {
         name: 'NoteA+',

@@ -20,14 +20,21 @@ interface Props {
 }
 
 /**
- * Açık defter. Karttan büyüyerek gelir (View Transition: aynı ad); ardından kapak ve iki sayfa
+ * Açık defter. Modal değil: Radix'in modal kipi body'ye pointer-events/kaydırma kilidi ve tüm sayfaya
+ * aria-hidden yazar; bu, yüzlerce kartlı sayfada açılışta tüm belgenin yeniden hesaplanmasına yol açıyordu.
+ * Arka plan kendi örtümüzle kapanır; notlar zaten kendi alanında kaydığı için kaydırma kilidi gerekmez.
+ * Karttan büyüyerek gelir (View Transition: aynı ad); ardından kapak ve iki sayfa
  * sol menteşe üzerinde art arda çevrilir. Telefonda tüm ekranı kendi rengiyle kaplar.
  */
 export function NoteEditor({ note, onClose }: Props) {
   return (
-    <DialogPrimitive.Root open={note !== null} onOpenChange={(open) => !open && onClose()}>
+    <DialogPrimitive.Root modal={false} open={note !== null} onOpenChange={(open) => !open && onClose()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay
+        {/* Örtüye tıklama, basıldığı anda değil bırakınca kapatır: yoksa tıklama alttaki karta düşüp onu açar */}
+        <div
+          aria-hidden
+          data-editor-scrim
+          onClick={onClose}
           style={{ viewTransitionName: 'editor-scrim' } as CSSProperties}
           className="fixed inset-0 z-50 bg-[rgb(23_17_46/0.6)] sm:bg-[rgb(23_17_46/0.55)] sm:backdrop-blur-[3px]"
         />
@@ -82,6 +89,10 @@ function EditorBody({ note, onClose }: { note: Note; onClose(): void }) {
     <DialogPrimitive.Content
       ref={sheetRef}
       aria-describedby={undefined}
+      aria-modal
+      onPointerDownOutside={(e) => {
+        if ((e.target as Element | null)?.closest('[data-editor-scrim]')) e.preventDefault()
+      }}
       onOpenAutoFocus={(e) => {
         e.preventDefault()
         // Dokunmatikte not okumak için açılır: klavye açılış animasyonuyla aynı anda kalkıp ekranı sarsmasın

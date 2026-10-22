@@ -75,7 +75,7 @@ export const NoteCard = memo(function NoteCard({ note, view, index, editing, com
         } as CSSProperties
       }
       className={cn(
-        'group animate-drop relative mb-6 break-inside-avoid pt-3 [perspective:900px]',
+        'group animate-drop offscreen-skip relative mb-6 break-inside-avoid pt-3 [perspective:900px]',
         compact && 'max-sm:mb-3.5',
         editing && 'invisible',
       )}

@@ -133,6 +133,17 @@
   background-position: 6px 0;
 }
 
+/*
+ * Ekran dışındaki defterlerin stil/yerleşim/boyaması atlanır. Yüzlerce notta, sayfanın tamamını
+ * etkileyen her değişiklik (düzenleyiciyi açmak gibi) yoksa yarım saniye donduruyordu.
+ * Kenar payı: gölge, spiral ve eğilme kartın kutusundan taşar; kırpılmasın.
+ */
+@utility offscreen-skip {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 220px;
+  overflow-clip-margin: 28px;
+}
+
 @utility card-shadow {
   box-shadow:
     0 1px 0 rgb(255 255 255 / 0.35) inset,
