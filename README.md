@@ -1,80 +1,92 @@
 # NoteA+
 
-Google Keep'in yerine geçecek, web, telefon ve tablette çalışan, tek hesapla senkronize not uygulaması.
-Yol haritası için [ROADMAP.md](ROADMAP.md) dosyasına bakın.
+A cross-platform note-taking app built to replace Google Keep. Write notes on the web, phone or tablet and keep them in sync with a single account.
 
-**Teknolojiler:** React 19 + TypeScript + Vite (PWA) · Tailwind CSS 4 + shadcn/ui · Supabase (Auth, Postgres, Realtime)
+**Live site:** https://notea-plus.enesilbayy.workers.dev (Android APK download at `/indir`)
 
-## Hızlı başlangıç
+## Features
+
+- Account with email and password, Google sign-in and password reset (Supabase Auth)
+- Create, edit and **autosave** notes
+- Pin notes, archive them, and move them to the trash with undo and restore
+- Cover colours for notes with a colour picker
+- Grid and list views with a responsive layout for phone, tablet and desktop
+- Search across note titles and content
+- **Realtime sync** between all open devices
+- Import your notes from Google Keep
+- Installable **PWA** and a native **Android app** (Capacitor)
+- Demo mode: without a backend configuration the app runs entirely in the browser's `localStorage`
+
+See [ROADMAP.md](ROADMAP.md) for planned features such as checklists, labels, folders, images, handwriting, locked notes, a built-in calculator and offline mode.
+
+## Tech Stack
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | React 19, TypeScript, Vite (PWA) |
+| UI | Tailwind CSS 4, shadcn/ui (Radix) |
+| Backend | Supabase (Auth, Postgres with Row Level Security, Realtime) |
+| Mobile | Capacitor 8 (Android) |
+| Hosting | Cloudflare Workers (static site) |
+| Tooling | oxlint, Vitest, GitHub Actions CI |
+
+## Getting Started
 
 ```bash
 npm install
 npm run dev
 ```
 
-`.env` dosyası yoksa uygulama **demo modunda** açılır: giriş istenmez, notlar yalnızca o tarayıcının
-`localStorage`'ında saklanır. Arayüzü denemek için yeterlidir.
+Without a `.env` file the app starts in **demo mode**: no login is required and notes are stored only in the current browser. This is enough to try the interface.
 
-## Supabase kurulumu (hesap + senkron)
+### Supabase setup (accounts and sync)
 
-1. [supabase.com](https://supabase.com) üzerinde ücretsiz bir proje oluşturun.
-2. **SQL Editor**'de [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) dosyasının içeriğini çalıştırın.
-   Tablolar, Row Level Security kuralları ve realtime yayını oluşturulur.
-3. **Project Settings → API** sayfasından URL ve `anon` anahtarını alın, `.env.example`'ı `.env` olarak kopyalayıp doldurun:
+1. Create a free project at [supabase.com](https://supabase.com).
+2. Run [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) in the **SQL Editor**. It creates the tables, Row Level Security policies and the realtime publication.
+3. Copy `.env.example` to `.env` and fill in the project URL and the `anon` key from **Project Settings → API**:
    ```
    VITE_SUPABASE_URL=https://xxxx.supabase.co
    VITE_SUPABASE_ANON_KEY=eyJ...
    ```
-4. **Authentication → URL Configuration**: *Site URL* olarak `http://localhost:5173` (yayında gerçek alan adı) girin.
-5. *(İsteğe bağlı)* Google ile giriş: **Authentication → Providers → Google**'ı açın; Google Cloud Console'da
-   OAuth istemcisi oluşturup yönlendirme adresi olarak `https://xxxx.supabase.co/auth/v1/callback` ekleyin.
+4. In **Authentication → URL Configuration** set the *Site URL* to `http://localhost:5173` (your real domain in production).
+5. *(Optional)* Enable Google sign-in under **Authentication → Providers → Google** with an OAuth client created in the Google Cloud Console.
 
-Sunucuyu yeniden başlatın (`npm run dev`); giriş ekranı gelir.
+Restart the dev server and the login screen appears.
 
-## Komutlar
+## Scripts
 
-| Komut | Açıklama |
-|---|---|
-| `npm run dev` | Geliştirme sunucusu (http://localhost:5173) |
-| `npm run build` | Tip kontrolü + üretim derlemesi (`dist/`) |
-| `npm run preview` | Derlenmiş uygulamayı yerelde sunar (PWA/service worker testi için) |
-| `npm run lint` | oxlint |
-| `npm test` | Birim testleri (vitest) |
-| `npm run deploy` | Derler ve Cloudflare'e (Workers statik site) yükler (önce `npx wrangler login`) |
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Development server at http://localhost:5173 |
+| `npm run build` | Type check and production build (`dist/`) |
+| `npm run preview` | Serve the production build locally (for testing the PWA) |
+| `npm run lint` | Lint with oxlint |
+| `npm test` | Unit tests with Vitest |
+| `npm run deploy` | Build and deploy to Cloudflare (run `npx wrangler login` first) |
+| `npm run apk` | Bump the version and build a signed Android APK |
 
-Telefonda/tablette denemek için: `npm run dev -- --host`, ardından aynı Wi-Fi'deki cihazdan bilgisayarın IP adresine gidin.
+To try the app on a phone or tablet, run `npm run dev -- --host` and open your computer's IP address from a device on the same Wi-Fi network.
 
-## Yayınlama
+## Android build
 
-Site: **https://notea-plus.enesilbayy.workers.dev** (arkadaşlara gönderilecek sayfa: `/indir`)
+`npm run apk` requires the Android SDK, JDK 21 (`JAVA_HOME`) and a signing key (`android/keystore.properties` plus the referenced `.jks` file). **Neither is stored in git, so keep backups.** Without the original key, new APKs cannot update an existing installation.
 
-```bash
-npm run apk      # sürümü artırır, imzalı APK'yı derler → downloads/notea-plus.apk
-npm run deploy   # siteyi (ve downloads/ içindeki APK'yı) Cloudflare'e yükler
-```
+In Supabase, the redirect URLs must include the site address (`/**`), `http://localhost:5173/**` and `com.enesilbay.noteaplus://auth/callback`.
 
-- `npm run apk` için Android SDK, JDK 21 (`JAVA_HOME`) ve imza dosyaları gerekir: `android/keystore.properties`
-  ve içinde adı geçen `.jks` dosyası. **İkisi de git'te yok; yedeklerini saklayın.** Kaybolursa yeni APK eski
-  kurulumun üzerine güncellenemez.
-- `.env` içindeki `VITE_SITE_URL`, uygulamadaki e-posta bağlantılarının açılacağı site adresidir.
-- Supabase → Authentication → URL Configuration'da Site URL ve şu yönlendirme adresleri tanımlı olmalı:
-  site adresi `/**`, `http://localhost:5173/**`, `com.enesilbay.noteaplus://auth/callback`.
-
-## Proje yapısı
+## Project Structure
 
 ```
 src/
-  components/      Uygulama bileşenleri (AppShell, NoteCard, NoteEditor, …)
-  components/ui/   shadcn/ui bileşenleri (npx shadcn add <ad> ile eklenir)
-  lib/             Supabase istemcisi, not deposu (Supabase + demo/yerel), context'ler, tipler
-  pages/           Sayfalar (giriş, notlar/arşiv/çöp)
-supabase/migrations/  Veritabanı şeması
+├── components/       App components (AppShell, NoteCard, NoteEditor, ...)
+│   └── ui/           shadcn/ui components
+├── lib/              Supabase client, notes repository, contexts, types
+└── pages/            Login, notes (all / archive / trash), reset password, download
+android/              Capacitor Android project
+supabase/migrations/  Database schema
 ```
 
-Not verisine tüm erişim `src/lib/notes-repo.ts` içindeki `NotesRepo` arayüzü üzerinden yapılır; Faz 6'daki
-offline/IndexedDB katmanı buraya yeni bir uygulama olarak eklenecek.
+All note access goes through the `NotesRepo` interface in `src/lib/notes-repo.ts`, with a Supabase implementation and a local demo implementation. The planned offline layer will be added as another implementation of it.
 
-## Katkı
+## Contributing
 
-- Dal açın, değişikliği yapın, `npm run lint && npm run build` temiz geçsin, PR açın.
-- CI (GitHub Actions) her push ve PR'da lint + build çalıştırır.
+Create a branch, make your change and make sure `npm run lint && npm run build` passes before opening a pull request. GitHub Actions runs lint and build on every push and pull request.
